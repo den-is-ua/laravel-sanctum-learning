@@ -19,7 +19,7 @@ class CreateUser extends Command
     public function handle()
     {
         $name = Str::random(3);
-        User::created([
+        User::create([
             'email' => $name,
             'name' => $name,
             'password' => Hash::make($name)

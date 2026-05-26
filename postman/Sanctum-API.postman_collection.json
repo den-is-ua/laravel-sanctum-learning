@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "a7c2e9b1-4f3d-4a2c-9e1f-sanctum-learning",
 		"name": "Sanctum API",
-		"description": "Laravel Sanctum scaffold for this project.\n\n**Routes**\n- `GET /api/user` — authenticated user (Bearer personal access token or SPA session).\n- `GET /sanctum/csrf-cookie` — starts SPA cookie session (pair with CSRF header on mutating requests).\n- `GET /up` — application health.\n\n**Personal access tokens**\nThere is no token-issuing HTTP route in the default scaffold. Add `Laravel\\Sanctum\\HasApiTokens` to `App\\Models\\User`, then create a token (e.g. `php artisan tinker` → `$user->createToken('postman')->plainTextToken`) and paste it into the `sanctum_token` collection variable.",
+		"description": "Laravel Sanctum scaffold for this project.\n\n**Routes**\n- `POST /api/user/token` \u2014 email/password \u2192 personal access token (set `user_email` / `user_password`; tests save token to `sanctum_token`).\n- `GET /api/user` \u2014 authenticated user (`Bearer sanctum_token` or SPA session).\n- `GET /sanctum/csrf-cookie` \u2014 SPA CSRF cookie.\n- `GET /up` \u2014 health.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
@@ -14,7 +14,17 @@
 		{
 			"key": "sanctum_token",
 			"value": "",
-			"type": "secret"
+			"type": "string"
+		},
+		{
+			"key": "user_email",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_password",
+			"value": "",
+			"type": "string"
 		}
 	],
 	"item": [
@@ -34,10 +44,14 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/up",
-							"host": ["{{base_url}}"],
-							"path": ["up"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"up"
+							]
 						},
-						"description": "Laravel built-in health endpoint from `bootstrap/app.php` (`health: '/up'`)."
+						"description": "Laravel health endpoint (`health: '/up'` in `bootstrap/app.php`)."
 					},
 					"response": []
 				}
@@ -59,10 +73,15 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/sanctum/csrf-cookie",
-							"host": ["{{base_url}}"],
-							"path": ["sanctum", "csrf-cookie"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sanctum",
+								"csrf-cookie"
+							]
 						},
-						"description": "Sets the `XSRF-TOKEN` cookie for first-party SPA authentication. Call this first from a browser-like client, then send `X-XSRF-TOKEN` header (and session cookies) on subsequent API requests. For Postman-only testing, personal access tokens are usually simpler."
+						"description": "Sets `XSRF-TOKEN` for SPA flows. Postman Bearer tokens are simpler for API-only tests."
 					},
 					"response": []
 				}
@@ -81,6 +100,61 @@
 				]
 			},
 			"item": [
+				{
+					"name": "Issue token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"try {",
+									"    const json = pm.response.json();",
+									"    if (json.token) {",
+									"        pm.collectionVariables.set(\"sanctum_token\", json.token);",
+									"    }",
+									"} catch (e) {}",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"{{user_email}}\",\n\t\"password\": \"{{user_password}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/user/token",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"token"
+							]
+						},
+						"description": "`routes/api.php` \u2014 validates `email` and `password`, returns `{ \"token\": \"...\" }`."
+					},
+					"response": []
+				},
 				{
 					"name": "Get current user",
 					"request": {
@@ -104,10 +178,15 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/api/user",
-							"host": ["{{base_url}}"],
-							"path": ["api", "user"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"user"
+							]
 						},
-						"description": "Defined in `routes/api.php`. Uses `auth:sanctum` middleware. Returns 401 without a valid Bearer token or session."
+						"description": "`routes/api.php` \u2192 `auth:sanctum`."
 					},
 					"response": []
 				}
