@@ -1,0 +1,117 @@
+{
+	"info": {
+		"_postman_id": "a7c2e9b1-4f3d-4a2c-9e1f-sanctum-learning",
+		"name": "Sanctum API",
+		"description": "Laravel Sanctum scaffold for this project.\n\n**Routes**\n- `GET /api/user` — authenticated user (Bearer personal access token or SPA session).\n- `GET /sanctum/csrf-cookie` — starts SPA cookie session (pair with CSRF header on mutating requests).\n- `GET /up` — application health.\n\n**Personal access tokens**\nThere is no token-issuing HTTP route in the default scaffold. Add `Laravel\\Sanctum\\HasApiTokens` to `App\\Models\\User`, then create a token (e.g. `php artisan tinker` → `$user->createToken('postman')->plainTextToken`) and paste it into the `sanctum_token` collection variable.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000",
+			"type": "string"
+		},
+		{
+			"key": "sanctum_token",
+			"value": "",
+			"type": "secret"
+		}
+	],
+	"item": [
+		{
+			"name": "System",
+			"item": [
+				{
+					"name": "Health",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/up",
+							"host": ["{{base_url}}"],
+							"path": ["up"]
+						},
+						"description": "Laravel built-in health endpoint from `bootstrap/app.php` (`health: '/up'`)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Sanctum (SPA)",
+			"item": [
+				{
+					"name": "Get CSRF cookie",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/sanctum/csrf-cookie",
+							"host": ["{{base_url}}"],
+							"path": ["sanctum", "csrf-cookie"]
+						},
+						"description": "Sets the `XSRF-TOKEN` cookie for first-party SPA authentication. Call this first from a browser-like client, then send `X-XSRF-TOKEN` header (and session cookies) on subsequent API requests. For Postman-only testing, personal access tokens are usually simpler."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "API",
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{sanctum_token}}",
+						"type": "string"
+					}
+				]
+			},
+			"item": [
+				{
+					"name": "Get current user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sanctum_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user"]
+						},
+						"description": "Defined in `routes/api.php`. Uses `auth:sanctum` middleware. Returns 401 without a valid Bearer token or session."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
